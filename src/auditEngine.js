@@ -1,37 +1,69 @@
+/**
+ * SpendWise AI - Audit Engine Logic
+ * Handles calculations for different AI tools and team sizes.
+ */
+
 export const runAudit = (currentTool, teamSize, monthlySpend) => {
   let recommendation = "";
   let potentialSavings = 0;
 
-  // 1. Logic for ChatGPT Plus users
-  if (currentTool === "ChatGPT Plus" && teamSize >= 3) {
-    // Agar team 3+ logo ki hai, toh 'Team Plan' sasta padta hai
-    potentialSavings = monthlySpend * 0.20; // Maan lete hain 20% bachat hogi
-    recommendation = "Switch to ChatGPT Team for better admin controls and cost efficiency.";
-  } 
-  
-  // 2. Logic for Cursor + ChatGPT Bundle
-  else if (currentTool === "Cursor + ChatGPT") {
-    // Agar dono use kar rahe hain, toh ek subscription ki cost bacha sakte hain
-    potentialSavings = 20; 
-    recommendation = "Use Cursor with API keys to eliminate the need for a separate ChatGPT Plus sub.";
-  } 
-  
-  // 3. Default case (Jab sab optimized ho)
-  else {
-    potentialSavings = 0;
-    recommendation = "Your current AI spend is well-optimized. No changes needed.";
+  // Logic for different tools using a Switch Case
+  switch (currentTool) {
+    case "ChatGPT Plus":
+      if (teamSize >= 3) {
+        // Savings based on moving to a Team plan
+        potentialSavings = monthlySpend * 0.20;
+        recommendation = "Switch to ChatGPT Team for better admin controls and cost efficiency.";
+      } else {
+        potentialSavings = 0;
+        recommendation = "For a single user, ChatGPT Plus is currently your best option.";
+      }
+      break;
+
+    case "Cursor + ChatGPT":
+      // Direct savings by eliminating redundant subscriptions
+      potentialSavings = 20; 
+      recommendation = "Cancel your ChatGPT Plus sub. Use Cursor with API keys to save $20/month.";
+      break;
+
+    case "GitHub Copilot":
+      if (teamSize > 10) {
+        potentialSavings = monthlySpend * 0.15;
+        recommendation = "Consider GitHub Copilot Enterprise for advanced security and custom models.";
+      } else {
+        potentialSavings = 0;
+        recommendation = "Your Copilot subscription is well-optimized for your team size.";
+      }
+      break;
+
+    case "Midjourney":
+      if (monthlySpend > 60) {
+        // Annual billing usually offers ~30% discount
+        potentialSavings = monthlySpend * 0.30;
+        recommendation = "Switch to an Annual Plan to save 30% on your Midjourney subscription.";
+      } else {
+        potentialSavings = 0;
+        recommendation = "You are on the most cost-effective plan for Midjourney.";
+      }
+      break;
+
+    default:
+      potentialSavings = 0;
+      recommendation = "Your current AI spend is well-optimized. No changes needed.";
   }
 
-  // --- NEW CALCULATIONS (Day 4 Analytics) ---
-  
-  // Saal bhar ki bachat (Monthly x 12)
+  // --- ANALYTICS CALCULATIONS ---
+
+  // Calculate annual projected savings
   const annualSavings = potentialSavings * 12;
 
-  // Efficiency Score (Kitne percent bacha rahe hain)
-  // Formula: (Saving / Total Spend) * 100
-  const efficiency = monthlySpend > 0 ? ((potentialSavings / monthlySpend) * 100).toFixed(0) : 0;
+  // Efficiency Score: How much of the budget is effectively used?
+  // Formula: ((Total Spend - Savings) / Total Spend) * 100
+  const efficiency = monthlySpend > 0 
+    ? (((monthlySpend - potentialSavings) / monthlySpend) * 100).toFixed(0) 
+    : 100;
 
-  // Saare values ko ek "Object" mein return kar rahe hain
+  // Return all metrics to the frontend
   return { 
     recommendation, 
     potentialSavings, 

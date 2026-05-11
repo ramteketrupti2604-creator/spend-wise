@@ -8,7 +8,7 @@ function App() {
   const [result, setResult] = useState(null)
 
   const handleAudit = () => {
-    // Audit Engine ko call kar rahe hain naye parameters ke saath
+    // Audit Engine ko call kar rahe hain naye logic ke saath
     const auditData = runAudit(tool, parseInt(teamSize), parseFloat(monthlySpend)); 
     setResult(auditData)
   }
@@ -22,17 +22,18 @@ function App() {
         <p className="text-gray-500 text-center mb-8 text-sm font-medium">Optimize your team's AI subscriptions</p>
         
         <div className="space-y-5">
-          {/* 1. Tool Selection */}
+          {/* 1. Tool Selection (Updated for Day 5) */}
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Current AI Tool</label>
             <select 
               value={tool}
               onChange={(e) => setTool(e.target.value)}
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer"
             >
               <option value="ChatGPT Plus">ChatGPT Plus</option>
               <option value="Cursor + ChatGPT">Cursor + ChatGPT Bundle</option>
-              <option value="Claude Pro">Claude Pro</option>
+              <option value="GitHub Copilot">GitHub Copilot</option>
+              <option value="Midjourney">Midjourney</option>
             </select>
           </div>
 
@@ -80,7 +81,6 @@ function App() {
               </span>
             </div>
             
-            {/* Metrics Grid */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
                 <p className="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Monthly</p>
@@ -92,7 +92,6 @@ function App() {
               </div>
             </div>
 
-            {/* Efficiency Progress Bar */}
             <div className="mb-6">
               <div className="flex justify-between items-end mb-2">
                 <p className="text-sm font-semibold text-gray-500">Efficiency Score</p>
@@ -106,7 +105,6 @@ function App() {
               </div>
             </div>
 
-            {/* Smart Recommendation Card */}
             <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-2xl">
               <div className="flex">
                 <div className="flex-shrink-0">
