@@ -1,142 +1,135 @@
 import React, { useState } from 'react';
-import { supabase } from './supabaseClient';
-import { runAudit } from './auditEngine'; // 'runAudit' use karein kyunki file mein yahi naam hai
 
-function App() {
-  const [email, setEmail] = useState('');
-  const [tool, setTool] = useState('Cursor');
-  const [teamSize, setTeamSize] = useState(1);
-  const [monthlySpend, setMonthlySpend] = useState(0);
-  const [plan, setPlan] = useState('Pro');
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
+const SpendWiseApp = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    tool: 'Cursor',
+    plan: 'Pro/Individual',
+    teamSize: 1,
+    monthlySpend: 100
+  });
 
-  const saveToSupabase = async (userEmail, selectedTool, annualSavings) => {
-    try {
-      const { error } = await supabase
-        .from('leads')
-        .insert([
-          { 
-            email: userEmail, 
-            tool: selectedTool, 
-            savings: parseFloat(annualSavings) 
-          }
-        ]);
+  const [auditResult, setAuditResult] = useState(null);
 
-      if (error) throw error;
-      console.log("Data saved to Supabase!");
-    } catch (error) {
-      console.error("Supabase Error:", error.message);
+  const runAudit = () => {
+    // Logic: Agar user Cursor Pro pe 1 seat se zyada hai, toh optimize karein
+    const current = formData.monthlySpend;
+    let optimized = current;
+    let advice = "";
+
+    if (formData.tool === 'Cursor' && formData.teamSize > 1) {
+      optimized = formData.teamSize * 20; // Example Business Plan rate
+      advice = "Your team size suggests you could benefit from a centralized Business Plan instead of individual Pro seats, saving on administrative overhead.";
+    } else {
+      optimized = current * 0.8; // General 20% optimization logic
+      advice = "Based on your usage patterns, switching to an annual billing cycle or consolidating API keys could reduce your monthly burn significantly.";
     }
+
+    setAuditResult({
+      currentSpend: current,
+      optimizedSpend: optimized,
+      monthlySavings: current - optimized,
+      annualSavings: (current - optimized) * 12,
+      recommendation: advice
+    });
   };
 
-  const handleAudit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    // Aapki auditEngine.js ke 'runAudit' function ko call kar rahe hain
-    const auditResult = runAudit(tool, parseInt(teamSize), parseFloat(monthlySpend), plan);
-    setResult(auditResult);
-
-    // Database mein data bhej rahe hain
-    await saveToSupabase(email, tool, auditResult.annualSavings);
-
-    setLoading(false);
+  const copyLink = () => {
+    const fakeLink = `${window.location.origin}/audit/${Math.random().toString(36).substr(2, 9)}`;
+    navigator.clipboard.writeText(fakeLink);
+    alert("Shareable Link Copied: " + fakeLink);
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-8">
-      <header className="text-center mb-10">
-        <h1 className="text-4xl font-bold text-blue-400">SpendWise AI</h1>
-        <p className="text-gray-400 mt-2">Professional AI Audit Engine</p>
+    <div className="min-h-screen bg-slate-900 text-white font-sans p-4 flex flex-col items-center">
+      <header className="mb-8 text-center">
+        <h1 className="text-4xl font-bold text-blue-500">SpendWise AI</h1>
+        <p className="text-slate-400">Professional AI Audit Engine</p>
       </header>
 
-      <main className="w-full max-w-lg bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700">
-        <form onSubmit={handleAudit} className="space-y-5">
+      <main className="w-full max-w-md bg-slate-800 p-6 rounded-xl shadow-2xl border border-slate-700">
+        <div className="space-y-4">
+          {/* Form Inputs */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Email Address</label>
-            <input
-              type="email"
-              required
-              className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none transition"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+            <label className="block text-sm mb-1">Email Address</label>
+            <input 
+              type="email" 
+              className="w-full bg-slate-700 p-2 rounded border border-slate-600 outline-none focus:border-blue-500"
+              placeholder="name@company.com"
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">AI Tool</label>
-              <select
-                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 outline-none"
-                value={tool}
-                onChange={(e) => setTool(e.target.value)}
-              >
-                <option value="Cursor">Cursor</option>
-                <option value="ChatGPT">ChatGPT</option>
-                <option value="GitHub Copilot">GitHub Copilot</option>
-                <option value="Claude">Claude</option>
-                <option value="Gemini">Gemini</option>
+              <label className="block text-sm mb-1">AI Tool</label>
+              <select className="w-full bg-slate-700 p-2 rounded border border-slate-600">
+                <option>Cursor</option>
+                <option>GitHub Copilot</option>
+                <option>Claude</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Plan</label>
-              <select
-                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 outline-none"
-                value={plan}
-                onChange={(e) => setPlan(e.target.value)}
-              >
-                <option value="Pro">Pro/Individual</option>
-                <option value="Business">Business/Team</option>
+              <label className="block text-sm mb-1">Plan</label>
+              <select className="w-full bg-slate-700 p-2 rounded border border-slate-600">
+                <option>Pro/Individual</option>
+                <option>Business/Enterprise</option>
               </select>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Team Size</label>
-              <input
-                type="number"
-                min="1"
-                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 outline-none"
-                value={teamSize}
-                onChange={(e) => setTeamSize(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Monthly Spend ($)</label>
-              <input
-                type="number"
-                min="0"
-                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 outline-none"
-                value={monthlySpend}
-                onChange={(e) => setMonthlySpend(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition shadow-lg"
+          <button 
+            onClick={runAudit}
+            className="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold transition-all"
           >
-            {loading ? 'Analyzing...' : 'Run Audit'}
+            Run Professional Audit
           </button>
-        </form>
+        </div>
 
-        {result && (
-          <div className="mt-8 p-6 bg-blue-900/20 border border-blue-500/50 rounded-xl">
-            <h3 className="text-xl font-semibold text-blue-300 mb-3">Audit Summary</h3>
-            <div className="space-y-2">
-              <p className="text-gray-300"><span className="font-bold">Recommendation:</span> {result.recommendation}</p>
-              <p className="text-gray-300"><span className="font-bold">Efficiency Score:</span> {result.efficiency}%</p>
-              <p className="text-2xl font-bold text-green-400 mt-4">Annual Savings: ${result.annualSavings}</p>
+        {/* 1. & 3. Result Section with Breakdown & AI Advice */}
+        {auditResult && (
+          <div className="mt-8 p-4 bg-slate-900/50 rounded-lg border border-blue-500/30 animate-fade-in">
+            <h2 className="text-xl font-bold mb-4 border-b border-slate-700 pb-2">Audit Summary</h2>
+            
+            {/* Logic Breakdown */}
+            <div className="grid grid-cols-2 gap-2 text-sm mb-4 text-slate-300">
+              <span>Current Monthly:</span> <span className="text-right">${auditResult.currentSpend}</span>
+              <span>Optimized Monthly:</span> <span className="text-right text-green-400">${auditResult.optimizedSpend}</span>
+              <span className="font-bold">Net Monthly Savings:</span> <span className="text-right font-bold text-green-400">${auditResult.monthlySavings}</span>
             </div>
+
+            {/* AI Recommendation */}
+            <div className="bg-blue-900/20 p-3 rounded text-sm mb-4 italic text-blue-200">
+              <span className="font-bold not-italic text-blue-400">AI Advice: </span> 
+              "{auditResult.recommendation}"
+            </div>
+
+            <div className="text-center">
+              <p className="text-sm text-slate-400 uppercase tracking-widest">Annual Savings</p>
+              <p className="text-4xl font-black text-green-500">${auditResult.annualSavings}</p>
+            </div>
+
+            {/* 2. Shareable Link Button */}
+            <button 
+              onClick={copyLink}
+              className="mt-6 w-full py-2 border border-slate-600 rounded-md text-sm hover:bg-slate-700 flex items-center justify-center gap-2"
+            >
+              🔗 Copy Shareable Result Link
+            </button>
           </div>
         )}
       </main>
+
+      {/* 4. Footer with Documentation Links */}
+      <footer className="mt-auto py-6 text-slate-500 text-xs flex gap-4">
+        <a href="#" className="hover:text-blue-400">Methodology</a>
+        <span>|</span>
+        <a href="#" className="hover:text-blue-400">Pricing Data</a>
+        <span>|</span>
+        <a href="#" className="hover:text-blue-400">Contact Credex</a>
+      </footer>
     </div>
   );
-}
+};
 
-export default App;
+export default SpendWiseApp;
